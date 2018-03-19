@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/darkgray"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_vertical_margin"
+    android:paddingRight="@dimen/activity_vertical_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="com.nju.wing.mylearn.MainActivity">
+
+    <FrameLayout
+        android:id="@+id/ly_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/div_tab_bar"
+        android:layout_alignParentStart="true">
+    </FrameLayout>
+    <View
+        android:id="@+id/div_tab_bar"
+        android:layout_width="match_parent"
+        android:layout_height="2px"
+        android:layout_above="@+id/rg_tab_bar"
+        android:background="@color/gray" />
+    <RadioGroup
+        android:id="@+id/rg_tab_bar"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_alignParentBottom="true"
+        android:orientation="horizontal">
+
+        <RadioButton
+            android:id="@+id/rb_learn"
+            style="@style/tab_menu_item"
+            android:drawableTop="@drawable/tab_menu_learn"
+            android:text="@string/tab_menu_learn" />
+        <View
+            android:layout_width="2px"
+            android:layout_height="match_parent"
+            android:background="@color/gray"/>
+        <RadioButton
+            android:id="@+id/rb_total"
+            style="@style/tab_menu_item"
+            android:drawableTop="@drawable/tab_menu_total"
+            android:text="@string/tab_menu_total" />
+
+    </RadioGroup>
+
+
+
+</RelativeLayout>

@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">My Learn</string>
+    <string name="tab_menu_learn">学习</string>
+    <string name="tab_menu_total">统计</string>
+    <string name="tab_menu_choose">选书</string>
+
+</resources>

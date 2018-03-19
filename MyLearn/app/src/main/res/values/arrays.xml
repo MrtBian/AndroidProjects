@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--选择单词书的表单-->
+    <string-array name="books">
+        <item name="CET64">CET4</item>
+        <item name="CET6">CET6</item>
+        <item name="GRE">GRE</item>
+        <item name="TOEFL">TOEFL</item>
+        <item name="GMAT">GMAT</item>
+        <item name="IELTS">IELTS</item>
+        <item name="university">university</item>
+        <item name="MasterEn">MasterEn</item>
+        <item name="word">word</item>
+    </string-array>
+</resources>
