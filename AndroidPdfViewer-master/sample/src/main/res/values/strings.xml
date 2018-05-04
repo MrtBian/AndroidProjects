@@ -1,5 +1,9 @@
 <resources>
-    <string name="app_name">AndroidPdfViewer demo</string>
+    <string name="app_name">PDFTranslate</string>
     <string name="pick_file">Pick file</string>
     <string name="toast_pick_file_error">Unable to pick file. Check status of file manager.</string>
+    <string name="certain">OK</string>
+    <string name="cancel">CANCEL</string>
+    <string name="retry">RETRY</string>
+    <string name="tip">Choose where you want to translate</string>
 </resources>

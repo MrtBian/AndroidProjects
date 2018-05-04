@@ -1,3 +1,6 @@
+apply plugin: 'com.android.application'
+//apply plugin: 'android-apt'
+
 buildscript {
     repositories {
         jcenter()
@@ -12,8 +15,6 @@ repositories {
     jcenter()
 }
 
-apply plugin: 'com.android.application'
-apply plugin: 'android-apt'
 
 android {
     compileSdkVersion 25
@@ -24,13 +25,20 @@ android {
         targetSdkVersion 25
         versionCode 3
         versionName "3.0.0"
+        javaCompileOptions {
+            annotationProcessorOptions {
+                includeCompileClasspath true
+            }
+        }
     }
 
 }
 
 dependencies {
     compile project(':android-pdf-viewer')
+    compile project(':tess-two')
     compile 'com.android.support:appcompat-v7:25.3.1'
     provided 'org.androidannotations:androidannotations:4.0.0'
     compile 'org.androidannotations:androidannotations-api:4.0.0'
+    implementation files('lib/jsoup-1.10.3.jar')
 }

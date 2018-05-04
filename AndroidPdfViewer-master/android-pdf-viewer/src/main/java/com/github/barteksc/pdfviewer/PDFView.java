@@ -256,6 +256,26 @@ public class PDFView extends RelativeLayout {
         setWillNotDraw(false);
     }
 
+//    @Override
+//    public boolean performClick(){
+//        return super.performClick();
+//    }
+//
+//    @Override
+//    public boolean onInterceptTouchEvent(MotionEvent event)
+//    {
+//        super.onInterceptTouchEvent(event);
+//        return false;
+//    }
+//
+//    //这个方法如果 true 则整个Activity 的 onTouchEvent() 不会被系统回调   但当true是Scrollview的滑动失效
+//    @Override
+//    public boolean onTouchEvent(MotionEvent event)
+//    {
+//        super.onTouchEvent(event);
+//        return false;
+//    }
+
     private void load(DocumentSource docSource, String password) {
         load(docSource, password, null);
     }

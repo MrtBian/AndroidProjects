@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:theme="@android:style/Theme.NoTitleBar"
+    tools:context="bitmap.BitmapActivity">
+    <bitmap.ScreenShotView
+        android:id="@+id/screenShotView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+    <LinearLayout
+        android:id="@+id/title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:color/transparent">
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:text="@string/tip"
+            android:textSize="16dp"/>
+    </LinearLayout>
+    <LinearLayout
+        android:id="@+id/bottom"
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:layout_alignParentBottom="true"
+        android:background="@android:color/transparent"
+        android:orientation="horizontal">
+        <TextView
+            android:id="@+id/cancel_btn"
+            android:text="@string/cancel"
+            style="@style/Button_Bitmap"/>
+        <TextView
+            android:id="@+id/certain_btn"
+            android:text="@string/certain"
+            style="@style/Button_Bitmap"/>
+        <TextView
+            android:id="@+id/restart_btn"
+            style="@style/Button_Bitmap"
+            android:text="@string/retry"/>
+    </LinearLayout>
+
+</RelativeLayout>

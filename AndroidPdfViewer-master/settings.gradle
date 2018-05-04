@@ -1,2 +1,2 @@
-include ':android-pdf-viewer'
+include ':android-pdf-viewer', ':tess-two'
 include ':sample'
