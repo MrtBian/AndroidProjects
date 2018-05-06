@@ -20,6 +20,7 @@ import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -40,6 +41,7 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.baidu.translate.TransApi;
 import com.github.barteksc.pdfviewer.PDFView;
 import com.github.barteksc.pdfviewer.listener.OnLoadCompleteListener;
 import com.github.barteksc.pdfviewer.listener.OnPageChangeListener;
@@ -73,6 +75,9 @@ import static bitmap.BitmapUtil.getDiskBitmap;
 import static bitmap.BitmapUtil.saveBitmapForSdCard;
 import static config.Constants.DEFAULT_IMG_DIR;
 import static config.Constants.DEFAULT_IMG_NAME;
+import static translation.StringTools.decodeUnicode;
+import static translation.StringTools.repairSentence;
+import static translation.StringTools.repairWord;
 
 @EActivity(R.layout.activity_main)
 @OptionsMenu(R.menu.options)
@@ -97,6 +102,8 @@ public class PDFViewActivity extends AppCompatActivity implements OnPageChangeLi
 
     private TranslationDialog translationDialog;
 
+    private SharedPreferences sp;
+
     private Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -105,9 +112,9 @@ public class PDFViewActivity extends AppCompatActivity implements OnPageChangeLi
             if (what == 0) {    //update
                 TextView tv = (TextView) translationDialog.findViewById(R.id.message);
                 tv.setText(wordExplanation);
-                if (translationDialog.isShowing()) {
-                    mHandler.sendEmptyMessageDelayed(0, 200);
-                }
+//                if (translationDialog.isShowing()) {
+//                    mHandler.sendEmptyMessageDelayed(0, 200);
+//                }
             } else {
                 translationDialog.cancel();
             }
@@ -122,6 +129,7 @@ public class PDFViewActivity extends AppCompatActivity implements OnPageChangeLi
     @NonConfigurationInstance
     Integer pageNumber = 0;
     String pdfFileName;
+
 
 
     @Override
@@ -266,6 +274,7 @@ public class PDFViewActivity extends AppCompatActivity implements OnPageChangeLi
                     int[] bound = new int[4];
                     result = ocrTess.xyOCR(bitmap, xDown, yDown, bound);
                     if (result != "") {
+                        result = repairWord(result.toLowerCase());
 //                                  rectDialog = new RectDialog(PDFViewActivity.this,bound);
                         Log.v("Word:", result);
                         Log.v("Box", bound[0] + " " + bound[1] + " " + bound[2] + " " + bound[3]);
@@ -281,7 +290,7 @@ public class PDFViewActivity extends AppCompatActivity implements OnPageChangeLi
 //                                    showDialog(result, wordExplanation);
                         translationDialog = new TranslationDialog(PDFViewActivity.this);
                         translationDialog.setTitle(result);
-                        translationDialog.setMessage("Explanation");
+                        translationDialog.setMessage("Wait...");
                         translationDialog.setBound(bound);
                         translationDialog.show();
 
@@ -528,22 +537,26 @@ public class PDFViewActivity extends AppCompatActivity implements OnPageChangeLi
             int[] bound = data.getIntArrayExtra("bound");
             result = ocrTess.defaultOCR(bitmapt);
             if (result != "") {
-//                                  rectDialog = new RectDialog(PDFViewActivity.this,bound);
-                result = result.toLowerCase();
-                Log.v("Word:", result);
+                result = repairSentence(result);
+                Log.v("Sentence:", result);
                 Log.v("Box", bound[0] + " " + bound[1] + " " + bound[2] + " " + bound[3]);
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        String explanation = new WordInfo(result).getExplanation();
-                        wordExplanation = explanation;
+//                        String explanation = new WordInfo(result).getSenTrans();
+//                        wordExplanation = explanation;
+                        //百度翻译
+                        wordExplanation = new TransApi().getTransResult(result,"en","zh");
+//                        wordExplanation = unicodeToString(wordExplanation);
+                        wordExplanation = decodeUnicode(wordExplanation);
                         mHandler.sendEmptyMessage(0);
 
                     }
                 }).start();
                 translationDialog = new TranslationDialog(PDFViewActivity.this);
-                translationDialog.setTitle(result);
-                translationDialog.setMessage("Explanation");
+//                translationDialog.setTitle(result);
+                translationDialog.setTitle("译文：");
+                translationDialog.setMessage("Wait...");
                 translationDialog.setBound(bound);
                 translationDialog.show();
             }

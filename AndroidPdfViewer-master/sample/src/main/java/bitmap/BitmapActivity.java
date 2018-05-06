@@ -4,11 +4,13 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.Window;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -33,11 +35,13 @@ public class BitmapActivity extends AppCompatActivity implements View.OnTouchLis
         private int screenWidth;
         private int screenHeight;
         private int[] bound;
+        private int statusBarHeight;
 
         @SuppressLint("ClickableViewAccessibility")
         @Override
         protected void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
+            requestWindowFeature(Window.FEATURE_NO_TITLE);
             setContentView(R.layout.activity_bitmap);
             screenShotView = (ScreenShotView) findViewById(R.id.screenShotView);
             cancelBtn = (TextView) findViewById(R.id.cancel_btn);
@@ -59,6 +63,10 @@ public class BitmapActivity extends AppCompatActivity implements View.OnTouchLis
             screenShotView.setBitmap(bmp, screenHeight, screenWidth);
             screenShotView.setOnTouchListener(this);
             bound = new int[4];
+            // 获取状态栏高度
+            Rect frame = new Rect();
+            getWindow().getDecorView().getWindowVisibleDisplayFrame(frame);
+            statusBarHeight = frame.top;
         }
 
         @Override
@@ -74,6 +82,8 @@ public class BitmapActivity extends AppCompatActivity implements View.OnTouchLis
                 case MotionEvent.ACTION_UP:
                     ocrBitmap = screenShotView.getBitmap();
                     bound = screenShotView.getBound();
+                    bound[1] -= statusBarHeight;
+                    bound[3] -= statusBarHeight;
                     break;
             }
             return true;

@@ -9,6 +9,7 @@ buildscript {
         // replace with the current version of the android-apt plugin
         classpath 'com.neenbedankt.gradle.plugins:android-apt:1.8'
     }
+
 }
 
 repositories {
@@ -17,6 +18,16 @@ repositories {
 
 
 android {
+    packagingOptions {
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/license.txt'
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/NOTICE.txt'
+        exclude 'META-INF/notice.txt'
+        exclude 'META-INF/ASL2.0'
+    }
     signingConfigs {
         config {
             keyAlias 'PDF'
@@ -52,4 +63,6 @@ dependencies {
     provided 'org.androidannotations:androidannotations:4.0.0'
     compile 'org.androidannotations:androidannotations-api:4.0.0'
     implementation files('lib/jsoup-1.10.3.jar')
+    implementation files('lib/httpcore-4.4.9.jar')
+    implementation files('lib/httpclient-4.5.5.jar')
 }
