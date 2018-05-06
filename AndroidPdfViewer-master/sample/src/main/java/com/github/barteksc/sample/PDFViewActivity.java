@@ -131,7 +131,6 @@ public class PDFViewActivity extends AppCompatActivity implements OnPageChangeLi
     String pdfFileName;
 
 
-
     @Override
     public boolean dispatchTouchEvent(MotionEvent event) {
         // 一定要spuer，否则事件打住,不会在向下调用了
@@ -160,7 +159,7 @@ public class PDFViewActivity extends AppCompatActivity implements OnPageChangeLi
                         saveBitmapForSdCard(DEFAULT_IMG_DIR, DEFAULT_IMG_NAME, bitmap);
                         Intent intent = new Intent();
                         intent.setClass(PDFViewActivity.this, BitmapActivity.class); //设置跳转的Activity
-                        PDFViewActivity.this.startActivityForResult(intent,GETPICTURE_CODE);
+                        PDFViewActivity.this.startActivityForResult(intent, GETPICTURE_CODE);
                         Log.v("PDFViewActivity", "LONGCLICK");
                     }
                 }
@@ -264,6 +263,7 @@ public class PDFViewActivity extends AppCompatActivity implements OnPageChangeLi
     void afterViews() {
         pdfView.setBackgroundColor(Color.LTGRAY);
         initOCR();
+        sp = this.getSharedPreferences("data", 0);
         pdfView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -308,7 +308,7 @@ public class PDFViewActivity extends AppCompatActivity implements OnPageChangeLi
                 Intent intent = new Intent();
 //                            intent.putExtra("testIntent", "123");
                 intent.setClass(PDFViewActivity.this, BitmapActivity.class); //设置跳转的Activity
-                PDFViewActivity.this.startActivityForResult(intent,GETPICTURE_CODE);
+                PDFViewActivity.this.startActivityForResult(intent, GETPICTURE_CODE);
                 Log.v("TAG", "LONGCLICK");
                 return true;
             }
@@ -546,7 +546,7 @@ public class PDFViewActivity extends AppCompatActivity implements OnPageChangeLi
 //                        String explanation = new WordInfo(result).getSenTrans();
 //                        wordExplanation = explanation;
                         //百度翻译
-                        wordExplanation = new TransApi().getTransResult(result,"en","zh");
+                        wordExplanation = new TransApi().getTransResult(result, "en", "zh");
 //                        wordExplanation = unicodeToString(wordExplanation);
                         wordExplanation = decodeUnicode(wordExplanation);
                         mHandler.sendEmptyMessage(0);
@@ -578,4 +578,25 @@ public class PDFViewActivity extends AppCompatActivity implements OnPageChangeLi
 
     }
 
+//    @Override
+//    protected void onPause() {
+//        super.onPause();
+//        SharedPreferences.Editor editor = sp.edit();
+//        if(uri==null){
+//
+//            editor.putString("uri", "");
+//        }else {
+//        editor.putString("uri", uri.toString());}
+//        editor.commit();
+//    }
+//
+//    @Override
+//    protected void onResume() {
+//        super.onResume();
+//        String temp = sp.getString("uri", "");
+//        if (temp == "") {
+//            uri = null;
+//        } else
+//            uri = Uri.parse(temp);
+//    }
 }
