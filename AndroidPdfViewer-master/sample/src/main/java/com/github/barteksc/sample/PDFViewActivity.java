@@ -256,39 +256,39 @@ public class PDFViewActivity extends AppCompatActivity implements OnPageChangeLi
     void afterViews() {
         pdfView.setBackgroundColor(Color.LTGRAY);
         initOCR();
-//        pdfView.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                //点击事件
-//                Log.v("Click XY", xDown + " " + yDown);
-//                Bitmap bitmap = captureScreen(PDFViewActivity.this);
-//                if (bitmap != null) {
-//                    int[] bound = new int[4];
-//                    result = ocrTess.xyOCR(bitmap, xDown, yDown, bound);
-//                    if (result != "") {
-////                                  rectDialog = new RectDialog(PDFViewActivity.this,bound);
-//                        Log.v("Word:", result);
-//                        Log.v("Box", bound[0] + " " + bound[1] + " " + bound[2] + " " + bound[3]);
-//                        new Thread(new Runnable() {
-//                            @Override
-//                            public void run() {
-//                                String explanation = new WordInfo(result).getExplanation();
-//                                wordExplanation = explanation;
-//                                mHandler.sendEmptyMessage(0);
-//
-//                            }
-//                        }).start();
-////                                    showDialog(result, wordExplanation);
-//                        translationDialog = new TranslationDialog(PDFViewActivity.this);
-//                        translationDialog.setTitle(result);
-//                        translationDialog.setMessage("Explanation");
-//                        translationDialog.setBound(bound);
-//                        translationDialog.show();
-//
-//                    }
-//                }
-//            }
-//        });
+        pdfView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //点击事件
+                Log.v("Click XY", xDown + " " + yDown);
+                Bitmap bitmap = captureScreen(PDFViewActivity.this);
+                if (bitmap != null) {
+                    int[] bound = new int[4];
+                    result = ocrTess.xyOCR(bitmap, xDown, yDown, bound);
+                    if (result != "") {
+//                                  rectDialog = new RectDialog(PDFViewActivity.this,bound);
+                        Log.v("Word:", result);
+                        Log.v("Box", bound[0] + " " + bound[1] + " " + bound[2] + " " + bound[3]);
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                String explanation = new WordInfo(result).getExplanation();
+                                wordExplanation = explanation;
+                                mHandler.sendEmptyMessage(0);
+
+                            }
+                        }).start();
+//                                    showDialog(result, wordExplanation);
+                        translationDialog = new TranslationDialog(PDFViewActivity.this);
+                        translationDialog.setTitle(result);
+                        translationDialog.setMessage("Explanation");
+                        translationDialog.setBound(bound);
+                        translationDialog.show();
+
+                    }
+                }
+            }
+        });
         pdfView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
