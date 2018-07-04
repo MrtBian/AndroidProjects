@@ -71,6 +71,7 @@ import ocr.OCRTess;
 import translation.WordInfo;
 
 import static bitmap.BitmapUtil.captureScreen;
+import static bitmap.BitmapUtil.cropBitmap;
 import static bitmap.BitmapUtil.getDiskBitmap;
 import static bitmap.BitmapUtil.saveBitmapForSdCard;
 import static config.Constants.DEFAULT_IMG_DIR;
@@ -259,6 +260,32 @@ public class PDFViewActivity extends AppCompatActivity implements OnPageChangeLi
         dialog.show();
     }
 
+    /**
+     * @param x     横坐标
+     * @param y     纵坐标
+     * @param bound 单词的边界
+     * @return 单词
+     * @brief 从屏幕坐标为(x, y)的地方取出单词word
+     */
+    private String getWordByXY(float x, float y, int[] bound) {
+        Bitmap bitmap = captureScreen(PDFViewActivity.this);
+        //宽200 高100
+        int width = 500,height = 150;
+        int xStart = x - width/2 > 0 ? (int) (x - width/2) : 0;
+        int yStart = y - height/2 > 0 ? (int) (y - height/2) : 0;
+        bitmap = cropBitmap(bitmap, xStart, yStart, width, height, false);
+        float xNew = x - xStart, yNew = y - yStart;
+        if (bitmap != null) {
+            String re = ocrTess.xyOCR(bitmap, xNew, yNew, bound);
+            bound[0] += xStart;
+            bound[2] += xStart;
+            bound[1] += yStart;
+            bound[3] += yStart;
+            return re;
+        }
+        return "";
+    }
+
     @AfterViews
     void afterViews() {
         pdfView.setBackgroundColor(Color.LTGRAY);
@@ -269,32 +296,29 @@ public class PDFViewActivity extends AppCompatActivity implements OnPageChangeLi
             public void onClick(View v) {
                 //点击事件
                 Log.v("Click XY", xDown + " " + yDown);
-                Bitmap bitmap = captureScreen(PDFViewActivity.this);
-                if (bitmap != null) {
-                    int[] bound = new int[4];
-                    result = ocrTess.xyOCR(bitmap, xDown, yDown, bound);
-                    if (result != "") {
-                        result = repairWord(result.toLowerCase());
-//                                  rectDialog = new RectDialog(PDFViewActivity.this,bound);
-                        Log.v("Word:", result);
-                        Log.v("Box", bound[0] + " " + bound[1] + " " + bound[2] + " " + bound[3]);
-                        new Thread(new Runnable() {
-                            @Override
-                            public void run() {
-                                String explanation = new WordInfo(result).getExplanation();
-                                wordExplanation = explanation;
-                                mHandler.sendEmptyMessage(0);
+                int[] bound = new int[4];
+                result = getWordByXY(xDown, yDown, bound);
+                if (!result.equals("")) {
+                    result = repairWord(result.toLowerCase());
+//                  rectDialog = new RectDialog(PDFViewActivity.this,bound);
+                    Log.v("Word:", result);
+                    Log.v("Box", bound[0] + " " + bound[1] + " " + bound[2] + " " + bound[3]);
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            String explanation = new WordInfo(result).getExplanation();
+                            wordExplanation = explanation;
+                            mHandler.sendEmptyMessage(0);
 
-                            }
-                        }).start();
+                        }
+                    }).start();
 //                                    showDialog(result, wordExplanation);
-                        translationDialog = new TranslationDialog(PDFViewActivity.this);
-                        translationDialog.setTitle(result);
-                        translationDialog.setMessage("Wait...");
-                        translationDialog.setBound(bound);
-                        translationDialog.show();
+                    translationDialog = new TranslationDialog(PDFViewActivity.this);
+                    translationDialog.setTitle(result);
+                    translationDialog.setMessage("Wait...");
+                    translationDialog.setBound(bound);
+                    translationDialog.show();
 
-                    }
                 }
             }
         });

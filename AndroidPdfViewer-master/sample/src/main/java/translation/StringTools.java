@@ -14,7 +14,10 @@ public final class StringTools {
 
 
     public static String repairWord(String word) {
-        String temp = word.replace("![a-zA-Z-]", "");
+        String temp = word.replace("‘", "'");
+        temp = temp.replace("—", "-");
+        temp = temp.replaceAll("'*","");
+        temp = temp.replaceAll("[^a-zA-Z-]", "");
         return temp;
     }
 

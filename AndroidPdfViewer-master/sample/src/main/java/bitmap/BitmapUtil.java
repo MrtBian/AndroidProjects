@@ -170,7 +170,7 @@ public class BitmapUtil {
     public static Bitmap captureScreen(Activity ac) {
         View dView = ac.getWindow().getDecorView();
         Bitmap bitmap = Bitmap.createBitmap(dView.getWidth(), dView.getHeight(), Bitmap.Config.ARGB_8888);
-//使用Canvas，调用自定义view控件的onDraw方法，绘制图片
+        //使用Canvas，调用自定义view控件的onDraw方法，绘制图片
         Canvas canvas = new Canvas(bitmap);
         dView.draw(canvas);
         // 获取状态栏高度
