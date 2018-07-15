@@ -10,7 +10,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.Window;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -41,7 +40,6 @@ public class BitmapActivity extends AppCompatActivity implements View.OnTouchLis
         @Override
         protected void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
-            requestWindowFeature(Window.FEATURE_NO_TITLE);
             setContentView(R.layout.activity_bitmap);
             screenShotView = (ScreenShotView) findViewById(R.id.screenShotView);
             cancelBtn = (TextView) findViewById(R.id.cancel_btn);
@@ -60,12 +58,12 @@ public class BitmapActivity extends AppCompatActivity implements View.OnTouchLis
 //            BitmapDrawable bmpDraw = new BitmapDrawable(is);
 //            bmp = bmpDraw.getBitmap();
             bmp = getDiskBitmap(DEFAULT_IMG_DIR + DEFAULT_IMG_NAME);
-            screenShotView.setBitmap(bmp, screenHeight, screenWidth);
+            screenShotView.setBitmap(bmp, bmp.getHeight(), screenWidth);
             screenShotView.setOnTouchListener(this);
             bound = new int[4];
             // 获取状态栏高度
             Rect frame = new Rect();
-            getWindow().getDecorView().getWindowVisibleDisplayFrame(frame);
+            BitmapActivity.this.getWindow().getDecorView().getWindowVisibleDisplayFrame(frame);
             statusBarHeight = frame.top;
         }
 

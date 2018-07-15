@@ -55,7 +55,7 @@ public class ScreenShotView extends View {
         mBitmap = bitmap;
         this.screenHeight = screenHeight;
         this.screenWidth = screenWidth;
-        changeBitmapSize();
+//        changeBitmapSize();
         invalidate();
     }
 

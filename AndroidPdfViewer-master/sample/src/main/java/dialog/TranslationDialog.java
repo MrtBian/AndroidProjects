@@ -1,18 +1,26 @@
 package dialog;
 
+import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.Context;
 import android.graphics.drawable.ColorDrawable;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.RequiresApi;
+import android.util.Log;
 import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.github.barteksc.sample.R;
+
+import translation.Player;
 
 /**
  * 创建自定义的dialog，显示翻译内容
@@ -20,16 +28,22 @@ import com.github.barteksc.sample.R;
  */
 public class TranslationDialog extends Dialog {
 
+    private Context context;
     //    private Button yes;//确定按钮
 //    private Button no;//取消按钮
     private RelativeLayout rootLayout;//根布局
     private RelativeLayout tmLayout;
+    private int tmHeight;
     private TextView titleTv;//消息标题文本
     private TextView messageTv;//消息提示文本
     private View rectTv;//标注方框
     private String titleStr;//从外界设置的title文本
     private String messageStr;//从外界设置的消息文本
+    private String pron_uk;
+    private ImageButton soundImg;
+    private Player player;
     private int[] bound;
+    private boolean isSen = false;
     //确定文本和取消文本的显示内容
 //    private String yesStr, noStr;
 //
@@ -65,8 +79,10 @@ public class TranslationDialog extends Dialog {
     public TranslationDialog(Context context) {
 //        super(context, R.style.MyDialog);
         super(context);
+        this.context = context;
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -78,6 +94,7 @@ public class TranslationDialog extends Dialog {
 //        setContentView(R.layout.layout_dialog);
         //按空白处取消
         setCanceledOnTouchOutside(true);
+        player = new Player();
         //初始化界面控件
         initView();
         //初始化界面数据
@@ -98,6 +115,21 @@ public class TranslationDialog extends Dialog {
                 TranslationDialog.this.dismiss();
             }
         });
+        soundImg.setOnClickListener(new View.OnClickListener() {
+            @SuppressLint("ShowToast")
+            @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+            @Override
+            public void onClick(View v) {
+                boolean b = player.playUrl(pron_uk);
+                if (!b) {
+                    showToast("未能找到读音-_-!");
+                }
+            }
+        });
+    }
+
+    private void showToast(String str) {
+        Toast.makeText(this.context, str, Toast.LENGTH_SHORT).show();
     }
 
     /**
@@ -111,28 +143,40 @@ public class TranslationDialog extends Dialog {
         if (messageStr != null) {
             messageTv.setText(messageStr);
         }
-        if (rectTv != null) {
+        if (rectTv != null && tmLayout != null) {
 //            rectTv.layout(bound[0],bound[1],bound[2],bound[3]);
-            RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(rootLayout.getLayoutParams());
-            layoutParams.width = bound[2] - bound[0];
-            layoutParams.height = bound[3] - bound[1];
-            layoutParams.setMargins(bound[0], bound[1], 0, 0);
-            rectTv.setLayoutParams(layoutParams);
-        }
-        if (tmLayout != null) {
-            RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(rootLayout.getLayoutParams());
+            RelativeLayout.LayoutParams rectTvLP = new RelativeLayout.LayoutParams(rootLayout.getLayoutParams());
+            RelativeLayout.LayoutParams tmLayoutLP = new RelativeLayout.LayoutParams(rootLayout.getLayoutParams());
             Display mDisplay = getWindow().getWindowManager().getDefaultDisplay();
 //            int width = mDisplay.getWidth();
             int height = mDisplay.getHeight();
-            boolean f = bound[1] > height - bound[3] ? true : false;
-            if (f) {
-//                layoutParams.addRule(RelativeLayout.ABOVE, R.id.rect);
-                layoutParams.setMargins(0,rectTv.getTop()-tmLayout.getWidth(),0,height-bound[3]);
+            if (isSen) {
+                tmLayoutLP.setMargins(0, 0, 0, 300);
+                rectTvLP.width = bound[2] - bound[0];
+                rectTvLP.height = bound[3] - bound[1];
+                rectTvLP.setMargins(bound[0], bound[1], 0, 0);
+            } else {
+                boolean f = bound[1] > height - bound[3] ? true : false;
+                if (f) {
+                    int w = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
+                    int h = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
+                    tmLayout.measure(w, h);
+                    tmHeight = tmLayout.getMeasuredHeight();
+                    int top = bound[1] - tmHeight;
+                    tmLayoutLP.setMargins(0, top, 0, 0);
+                    rectTvLP.width = bound[2] - bound[0];
+                    rectTvLP.height = bound[3] - bound[1];
+                    rectTvLP.setMargins(bound[0], bound[1], 0, 0);
+                } else {
+                    rectTvLP.width = bound[2] - bound[0];
+                    rectTvLP.height = bound[3] - bound[1];
+                    rectTvLP.setMargins(bound[0], bound[1], 0, 0);
+                    tmLayoutLP.addRule(RelativeLayout.BELOW, R.id.rect);
+                }
             }
-            else {
-                layoutParams.addRule(RelativeLayout.BELOW, R.id.rect);
-            }
-            tmLayout.setLayoutParams(layoutParams);
+            rectTv.setLayoutParams(rectTvLP);
+            tmLayout.setLayoutParams(tmLayoutLP);
+            Log.v("Height:", tmHeight + "");
         }
         //如果设置按钮的文字
 //        if (yesStr != null) {
@@ -154,6 +198,10 @@ public class TranslationDialog extends Dialog {
         rectTv = (View) findViewById(R.id.rect);
         tmLayout = (RelativeLayout) findViewById(R.id.tmLayout);
         rootLayout = (RelativeLayout) findViewById(R.id.layout_root);
+        soundImg = (ImageButton) findViewById(R.id.sound);
+        if (isSen) {
+            soundImg.setVisibility(View.INVISIBLE);
+        }
     }
 
     /**
@@ -172,6 +220,22 @@ public class TranslationDialog extends Dialog {
      */
     public void setMessage(String message) {
         messageStr = message;
+    }
+
+    /**
+     * @param pron 单词的读音URL
+     * @brief 从外界设置单词音源
+     */
+    public void setPron_uk(String pron) {
+        pron_uk = pron;
+    }
+
+    /**
+     * @param isSen 是否
+     * @brief 设置是否是长句翻译
+     */
+    public void setIsSen(boolean isSen) {
+        this.isSen = isSen;
     }
 
     public void setBound(int[] bound) {

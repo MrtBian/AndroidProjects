@@ -64,22 +64,21 @@ public class Player {
     }
 
 
-    public void playUrl (String videoUrl) {
+    public boolean playUrl (String videoUrl) {
+        mediaPlayer.reset();
         try {
-            mediaPlayer.reset();
             mediaPlayer.setDataSource(videoUrl);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+        try {
             mediaPlayer.prepare();
-            mediaPlayer.start();
-        } catch (IllegalArgumentException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IllegalStateException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
         } catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
+        mediaPlayer.start();
+        return true;
     }
 
     public void pause () {
@@ -89,6 +88,7 @@ public class Player {
     public void stop () {
         if (mediaPlayer != null) {
             mediaPlayer.stop();
+            mediaPlayer.reset();
             mediaPlayer.release();
             mediaPlayer = null;
         }

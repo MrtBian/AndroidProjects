@@ -15,6 +15,8 @@
  */
 package com.github.barteksc.sample;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
@@ -87,24 +89,28 @@ public class PDFViewActivity extends AppCompatActivity implements OnPageChangeLi
 
     private static final String TAG = PDFViewActivity.class.getSimpleName();
 
-    private final static int REQUEST_CODE = 42;
-    public static final int PERMISSION_CODE = 42042;
+    private final static int REQUEST_READ_CODE = 42;
+    private final static int REQUEST_WRITE_CODE = 43;
+    public static final int PERMISSION_READ_CODE = 42042;
+    public static final int PERMISSION_WRITE_CODE = 43043;
     public static final int GETPICTURE_CODE = 21021;
 
     public static final String SAMPLE_FILE = "sample.pdf";
     public static final String READ_EXTERNAL_STORAGE = "android.permission.READ_EXTERNAL_STORAGE";
+    public static final String WRITE_EXTERNAL_STORAGE = "android.permission.WRITE_EXTERNAL_STORAGE";
 
     private OCRTess ocrTess;
     /*手势识别设置*/
     private float xDown, yDown, xUp, yUp;
     private long timeUp, timeDown;
     private static final int TIMELONGCLICK = 300;
-    private String result, wordExplanation;
+    private String result, wordExplanation,pron;
 
     private TranslationDialog translationDialog;
 
     private SharedPreferences sp;
 
+    @SuppressLint("HandlerLeak")
     private Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -113,6 +119,7 @@ public class PDFViewActivity extends AppCompatActivity implements OnPageChangeLi
             if (what == 0) {    //update
                 TextView tv = (TextView) translationDialog.findViewById(R.id.message);
                 tv.setText(wordExplanation);
+                translationDialog.setPron_uk(pron);
 //                if (translationDialog.isShowing()) {
 //                    mHandler.sendEmptyMessageDelayed(0, 200);
 //                }
@@ -179,12 +186,16 @@ public class PDFViewActivity extends AppCompatActivity implements OnPageChangeLi
         try {
             //获得原文件流
             InputStream inputStream = context.getResources().getAssets().open(fileName);
-            File file = new File(storagePath);
-            if (!file.exists()) {//如果文件夹不存在，则创建新的文件夹
-                file.mkdirs();
+            File filePath = new File(storagePath);
+            if (!filePath.exists()) {//如果文件夹不存在，则创建新的文件夹
+                filePath.mkdirs();
             }
             //输出流
-            OutputStream outputStream = new FileOutputStream(new File(storagePath + File.separator + fileName));
+            File file = new File(storagePath + File.separator + fileName);
+            if (!file.exists()) {//如果文件不存在，则创建新的文件
+                file.createNewFile();
+            }
+            OutputStream outputStream = new FileOutputStream(file);
             byte[] data = new byte[1024];
             //开始处理流
             while (inputStream.read(data) != -1) {
@@ -214,9 +225,8 @@ public class PDFViewActivity extends AppCompatActivity implements OnPageChangeLi
             ActivityCompat.requestPermissions(
                     this,
                     new String[]{READ_EXTERNAL_STORAGE},
-                    PERMISSION_CODE
+                    PERMISSION_READ_CODE
             );
-
             return;
         }
 
@@ -227,7 +237,7 @@ public class PDFViewActivity extends AppCompatActivity implements OnPageChangeLi
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.setType("application/pdf");
         try {
-            startActivityForResult(intent, REQUEST_CODE);
+            startActivityForResult(intent, REQUEST_READ_CODE);
         } catch (ActivityNotFoundException e) {
             //alert user that file manager not working
             Toast.makeText(this, R.string.toast_pick_file_error, Toast.LENGTH_SHORT).show();
@@ -252,11 +262,6 @@ public class PDFViewActivity extends AppCompatActivity implements OnPageChangeLi
                     }
                 });
         AlertDialog dialog = builder.create();
-//        try {
-//            Thread.sleep(500);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
         dialog.show();
     }
 
@@ -269,11 +274,15 @@ public class PDFViewActivity extends AppCompatActivity implements OnPageChangeLi
      */
     private String getWordByXY(float x, float y, int[] bound) {
         Bitmap bitmap = captureScreen(PDFViewActivity.this);
+        int bitWidth = bitmap.getWidth();
+        int bitHeight = bitmap.getHeight();
         //宽200 高100
-        int width = 500,height = 150;
-        int xStart = x - width/2 > 0 ? (int) (x - width/2) : 0;
-        int yStart = y - height/2 > 0 ? (int) (y - height/2) : 0;
-        bitmap = cropBitmap(bitmap, xStart, yStart, width, height, false);
+        int width = 500, height = 150;
+        int xStart = x - width / 2 > 0 ? (int) (x - width / 2) : 0;
+        int yStart = y - height / 2 > 0 ? (int) (y - height / 2) : 0;
+        int xEnd = bitWidth - x > width ? xStart + width : bitWidth;
+        int yEnd = bitHeight - y > height ? yStart + height : bitHeight;
+        bitmap = cropBitmap(bitmap, xStart, yStart, xEnd - xStart, yEnd - yStart, false);
         float xNew = x - xStart, yNew = y - yStart;
         if (bitmap != null) {
             String re = ocrTess.xyOCR(bitmap, xNew, yNew, bound);
@@ -288,8 +297,16 @@ public class PDFViewActivity extends AppCompatActivity implements OnPageChangeLi
 
     @AfterViews
     void afterViews() {
+
+        //兼容Android6.0运行时权限解决方案
+        //检测是否有写的权限
+        int permission = ActivityCompat.checkSelfPermission(this,
+                Manifest.permission.WRITE_CALENDAR);
+        if (permission != PackageManager.PERMISSION_GRANTED) {
+            // 没有写的权限，去申请写的权限，会弹出对话框
+            ActivityCompat.requestPermissions(this, new String[]{WRITE_EXTERNAL_STORAGE}, PERMISSION_WRITE_CODE);
+        }
         pdfView.setBackgroundColor(Color.LTGRAY);
-        initOCR();
         sp = this.getSharedPreferences("data", 0);
         pdfView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -306,8 +323,9 @@ public class PDFViewActivity extends AppCompatActivity implements OnPageChangeLi
                     new Thread(new Runnable() {
                         @Override
                         public void run() {
-                            String explanation = new WordInfo(result).getExplanation();
-                            wordExplanation = explanation;
+                            WordInfo wordInfo = new WordInfo(result);
+                            wordExplanation = wordInfo.getExplanation();
+                            pron = wordInfo.getPron_uk();
                             mHandler.sendEmptyMessage(0);
 
                         }
@@ -474,7 +492,7 @@ public class PDFViewActivity extends AppCompatActivity implements OnPageChangeLi
                 .load();
     }
 
-    @OnActivityResult(REQUEST_CODE)
+    @OnActivityResult(REQUEST_READ_CODE)
     public void onResult(int resultCode, Intent intent) {
         if (resultCode == RESULT_OK) {
             uri = intent.getData();
@@ -545,10 +563,37 @@ public class PDFViewActivity extends AppCompatActivity implements OnPageChangeLi
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String permissions[],
                                            @NonNull int[] grantResults) {
-        if (requestCode == PERMISSION_CODE) {
+        if (requestCode == PERMISSION_READ_CODE) {
             if (grantResults.length > 0
                     && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 launchPicker();
+            }
+        }if (requestCode == PERMISSION_WRITE_CODE) {
+            if (grantResults.length > 0
+                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                initOCR();
+            }
+            else {
+                //权限申请被拒绝，依赖该权限的功能不能再使用了。
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setTitle("权限获取失败！");
+                builder.setMessage("请重新启动程序点击允许获得OCR支持。");
+//                builder.setPositiveButton("OK",
+//                        new DialogInterface.OnClickListener() {
+//                            @Override
+//                            public void onClick(DialogInterface dialogInterface, int i) {
+//
+//                            }
+//                        });
+                final AlertDialog dialog = builder.create();
+                dialog.show();
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        dialog.dismiss();
+                        PDFViewActivity.this.finish();
+                    }
+                }, 3000);
             }
         }
     }
@@ -582,6 +627,7 @@ public class PDFViewActivity extends AppCompatActivity implements OnPageChangeLi
                 translationDialog.setTitle("译文：");
                 translationDialog.setMessage("Wait...");
                 translationDialog.setBound(bound);
+                translationDialog.setIsSen(true);
                 translationDialog.show();
             }
         }
